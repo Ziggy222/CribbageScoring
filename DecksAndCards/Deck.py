@@ -1,4 +1,5 @@
 from .Card import Card, Suits, Values
+import random
 
 class Deck:
     def __init__(self, cards=None):
@@ -11,8 +12,10 @@ class Deck:
         else:
             self.cards = cards
 
-    def draw(self):
-        return self.cards.pop()
+    # Returns a list of cards drawn from the deck of length num_cards (default is 1)
+    def draw(self, num_cards=1):
+        return [self.cards.pop() for _ in range(num_cards)]
 
-    
-        
+    def shuffle(self):
+        """Shuffles the deck in place"""
+        random.shuffle(self.cards)

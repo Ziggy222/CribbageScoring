@@ -30,18 +30,14 @@ class Card:
 
     def short_print(self):
         """Returns a short string representation of the card (e.g., 'AH', '10D')"""
-        # Values are stored as tuples: (id, name, symbol)
+        # Values and Suits are stored as tuples: (id, name, symbol)
         value_symbol = self.value.value[2]
-        # Suits may be stored as nested tuples due to trailing commas: ((id, name, symbol),)
-        # or as regular tuples: (id, name, symbol)
         suit_symbol = self.suit.value[2]
         return f"{value_symbol}{suit_symbol}"
 
     def full_print(self):
         """Returns a full string representation of the card (e.g., 'Ace of Hearts', 'Ten of Diamonds')"""
-        # Values are stored as tuples: (id, name, symbol)
+        # Values and Suits are stored as tuples: (id, name, symbol)
         value_name = self.value.value[1]
-        # Suits may be stored as nested tuples due to trailing commas: ((id, name, symbol),)
-        # or as regular tuples: (id, name, symbol)
         suit_name = self.suit.value[1]
         return f"{value_name} of {suit_name}"

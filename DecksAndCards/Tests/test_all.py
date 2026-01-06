@@ -11,7 +11,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 sys.path.insert(0, project_root)
 
 # Import all test modules
-from DecksAndCards.Tests import test_Card, test_Deck
+from DecksAndCards.Tests import test_Card, test_Deck, test_Cribbage
 
 def create_test_suite():
     """Create a test suite containing all tests"""
@@ -21,6 +21,7 @@ def create_test_suite():
     # Load tests from each test module
     suite.addTests(loader.loadTestsFromModule(test_Card))
     suite.addTests(loader.loadTestsFromModule(test_Deck))
+    suite.addTests(loader.loadTestsFromModule(test_Cribbage))
     
     return suite
 
