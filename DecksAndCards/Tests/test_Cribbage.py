@@ -7,7 +7,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 sys.path.insert(0, project_root)
 
 from DecksAndCards.Card import Card, Suits, Values
-from Cribbage import check_pairs, check_runs
+from Cribbage import check_pairs, check_runs, check_flushes
 
 class TestCribbage(unittest.TestCase):
     def test_score_pairs_one_pair(self):
@@ -150,3 +150,99 @@ class TestCribbage(unittest.TestCase):
         cut = None
         score = check_runs(hand, cut, 0)
         self.assertEqual(score, 4)
+
+    def test_check_flushes_hand_four_plus_cut_same_suit(self):
+        """Test check_flushes with hand [H,H,H,H] and cut [H] = 5 points"""
+        hand = [
+            Card(Values.ACE, Suits.HEARTS),
+            Card(Values.TWO, Suits.HEARTS),
+            Card(Values.THREE, Suits.HEARTS),
+            Card(Values.FOUR, Suits.HEARTS)
+        ]
+        cut = Card(Values.FIVE, Suits.HEARTS)
+        score = check_flushes(hand, cut, 0, is_crib=False)
+        self.assertEqual(score, 5)
+    
+    def test_check_flushes_hand_four_different_cut(self):
+        """Test check_flushes with hand [H,H,H,H] and cut [D] = 4 points"""
+        hand = [
+            Card(Values.ACE, Suits.HEARTS),
+            Card(Values.TWO, Suits.HEARTS),
+            Card(Values.THREE, Suits.HEARTS),
+            Card(Values.FOUR, Suits.HEARTS)
+        ]
+        cut = Card(Values.FIVE, Suits.DIAMONDS)
+        score = check_flushes(hand, cut, 0, is_crib=False)
+        self.assertEqual(score, 4)
+    
+    def test_check_flushes_hand_mixed_suits_same_cut(self):
+        """Test check_flushes with hand [H,H,D,H] and cut [H] = 0 points"""
+        hand = [
+            Card(Values.ACE, Suits.HEARTS),
+            Card(Values.TWO, Suits.HEARTS),
+            Card(Values.THREE, Suits.DIAMONDS),
+            Card(Values.FOUR, Suits.HEARTS)
+        ]
+        cut = Card(Values.FIVE, Suits.HEARTS)
+        score = check_flushes(hand, cut, 0, is_crib=False)
+        self.assertEqual(score, 0)
+    
+    def test_check_flushes_hand_all_different_suits(self):
+        """Test check_flushes with hand [S,C,D,H] and cut [D] = 0 points"""
+        hand = [
+            Card(Values.ACE, Suits.SPADES),
+            Card(Values.TWO, Suits.CLUBS),
+            Card(Values.THREE, Suits.DIAMONDS),
+            Card(Values.FOUR, Suits.HEARTS)
+        ]
+        cut = Card(Values.FIVE, Suits.DIAMONDS)
+        score = check_flushes(hand, cut, 0, is_crib=False)
+        self.assertEqual(score, 0)
+    
+    def test_check_flushes_crib_five_card_flush(self):
+        """Test check_flushes with crib [S,S,S,S] and cut [S] = 5 points"""
+        hand = [
+            Card(Values.ACE, Suits.SPADES),
+            Card(Values.TWO, Suits.SPADES),
+            Card(Values.THREE, Suits.SPADES),
+            Card(Values.FOUR, Suits.SPADES)
+        ]
+        cut = Card(Values.FIVE, Suits.SPADES)
+        score = check_flushes(hand, cut, 0, is_crib=True)
+        self.assertEqual(score, 5)
+    
+    def test_check_flushes_crib_four_card_flush_different_cut(self):
+        """Test check_flushes with crib [S,S,S,S] and cut [C] = 0 points"""
+        hand = [
+            Card(Values.ACE, Suits.SPADES),
+            Card(Values.TWO, Suits.SPADES),
+            Card(Values.THREE, Suits.SPADES),
+            Card(Values.FOUR, Suits.SPADES)
+        ]
+        cut = Card(Values.FIVE, Suits.CLUBS)
+        score = check_flushes(hand, cut, 0, is_crib=True)
+        self.assertEqual(score, 0)
+    
+    def test_check_flushes_crib_mixed_suits_same_cut(self):
+        """Test check_flushes with crib [S,S,S,C] and cut [S] = 0 points"""
+        hand = [
+            Card(Values.ACE, Suits.SPADES),
+            Card(Values.TWO, Suits.SPADES),
+            Card(Values.THREE, Suits.SPADES),
+            Card(Values.FOUR, Suits.CLUBS)
+        ]
+        cut = Card(Values.FIVE, Suits.SPADES)
+        score = check_flushes(hand, cut, 0, is_crib=True)
+        self.assertEqual(score, 0)
+    
+    def test_check_flushes_crib_all_different_suits(self):
+        """Test check_flushes with crib [H,D,C,S] and cut [H] = 0 points"""
+        hand = [
+            Card(Values.ACE, Suits.HEARTS),
+            Card(Values.TWO, Suits.DIAMONDS),
+            Card(Values.THREE, Suits.CLUBS),
+            Card(Values.FOUR, Suits.SPADES)
+        ]
+        cut = Card(Values.FIVE, Suits.HEARTS)
+        score = check_flushes(hand, cut, 0, is_crib=True)
+        self.assertEqual(score, 0)

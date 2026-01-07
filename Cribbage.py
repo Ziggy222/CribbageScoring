@@ -10,7 +10,9 @@ def score_hand(hand, cut_card):
     # Check for pairs, returns incremented score
     score = check_pairs(hand, cut_card, score)
     # Check for runs
+    score = check_runs(hand, cut_card, score)
     # Check for flushes
+    score = check_flushes(hand, cut_card, score)
     # Check for nibs and nobs
 
     return score
@@ -105,4 +107,31 @@ def check_runs(hand, cut_card, score):
             score += run_length * multiplier
     
     return score
-    
+
+def check_flushes(hand, cut_card, score, is_crib=False):
+        flush_points = 0
+        # If the hand is the crib, we can only score a full 5 card flush
+        if is_crib:
+            cards = hand.copy()
+            if cut_card is not None:
+                cards.append(cut_card)
+            # Check for a flush of 5 cards
+            if len(cards) == 5:
+                # Check if all cards are the same suit
+                if all(card.suit == cards[0].suit for card in cards):
+                    return score + 5
+            return score
+        else:
+            # We are scoring a hand, not a crib.
+            # We can score a flush of 4 or 5 cards
+            # A flush of 4 can only happen if it's all four cards in the hand
+            # A flush of 5 can happen with all 4 hand cards and the cut card
+
+            # Check for a flush of 4 cards
+            if all(card.suit == hand[0].suit for card in hand):
+                flush_points = 4
+            # Check for a flush of 5 cards
+            if all(card.suit == hand[0].suit for card in hand) and cut_card is not None and cut_card.suit == hand[0].suit:
+                flush_points = 5
+            return score + flush_points
+        return score
