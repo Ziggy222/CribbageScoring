@@ -7,7 +7,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 sys.path.insert(0, project_root)
 
 from DecksAndCards.Card import Card, Suits, Values
-from Cribbage import check_pairs, check_runs, check_flushes
+from Cribbage import check_pairs, check_runs, check_flushes, check_nibs_and_nobs
 
 class TestCribbage(unittest.TestCase):
     def test_score_pairs_one_pair(self):
@@ -245,4 +245,52 @@ class TestCribbage(unittest.TestCase):
         ]
         cut = Card(Values.FIVE, Suits.HEARTS)
         score = check_flushes(hand, cut, 0, is_crib=True)
+        self.assertEqual(score, 0)
+    
+    def test_check_nibs_and_nobs_nibs_only(self):
+        """Test check_nibs_and_nobs with [JH,4D,3S,10C] and cut [JD] = 2 points (nibs only)"""
+        hand = [
+            Card(Values.JACK, Suits.HEARTS),
+            Card(Values.FOUR, Suits.DIAMONDS),
+            Card(Values.THREE, Suits.SPADES),
+            Card(Values.TEN, Suits.CLUBS)
+        ]
+        cut = Card(Values.JACK, Suits.DIAMONDS)
+        score = check_nibs_and_nobs(hand, cut, 0)
+        self.assertEqual(score, 2)
+    
+    def test_check_nibs_and_nobs_nibs_and_nobs(self):
+        """Test check_nibs_and_nobs with [JD, AH, 2H, 3H] and cut [JD] = 3 points (nibs + nobs)"""
+        hand = [
+            Card(Values.JACK, Suits.DIAMONDS),
+            Card(Values.ACE, Suits.HEARTS),
+            Card(Values.TWO, Suits.HEARTS),
+            Card(Values.THREE, Suits.HEARTS)
+        ]
+        cut = Card(Values.JACK, Suits.DIAMONDS)
+        score = check_nibs_and_nobs(hand, cut, 0)
+        self.assertEqual(score, 3)
+    
+    def test_check_nibs_and_nobs_nobs_only(self):
+        """Test check_nibs_and_nobs with [AH, JS, 2C, 3C] and cut [4S] = 1 point (nobs only)"""
+        hand = [
+            Card(Values.ACE, Suits.HEARTS),
+            Card(Values.JACK, Suits.SPADES),
+            Card(Values.TWO, Suits.CLUBS),
+            Card(Values.THREE, Suits.CLUBS)
+        ]
+        cut = Card(Values.FOUR, Suits.SPADES)
+        score = check_nibs_and_nobs(hand, cut, 0)
+        self.assertEqual(score, 1)
+    
+    def test_check_nibs_and_nobs_no_nibs_or_nobs(self):
+        """Test check_nibs_and_nobs with [AD, 2S, 3C, 4H] and cut [5S] = 0 points"""
+        hand = [
+            Card(Values.ACE, Suits.DIAMONDS),
+            Card(Values.TWO, Suits.SPADES),
+            Card(Values.THREE, Suits.CLUBS),
+            Card(Values.FOUR, Suits.HEARTS)
+        ]
+        cut = Card(Values.FIVE, Suits.SPADES)
+        score = check_nibs_and_nobs(hand, cut, 0)
         self.assertEqual(score, 0)

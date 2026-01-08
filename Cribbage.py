@@ -14,6 +14,7 @@ def score_hand(hand, cut_card):
     # Check for flushes
     score = check_flushes(hand, cut_card, score)
     # Check for nibs and nobs
+    score = check_nibs_and_nobs(hand, cut_card, score)
 
     return score
 
@@ -134,4 +135,14 @@ def check_flushes(hand, cut_card, score, is_crib=False):
             if all(card.suit == hand[0].suit for card in hand) and cut_card is not None and cut_card.suit == hand[0].suit:
                 flush_points = 5
             return score + flush_points
-        return score
+    
+# A simple nibs and nobs check
+# Will be expanded to only score nibs for the dealer
+def check_nibs_and_nobs(hand, cut_card, score):
+    # Check for nibs (the cut card is any Jack)
+    if cut_card is not None and cut_card.value == Values.JACK:
+        score += 2
+    # Check for nobs (the cut card matches the suit of any Jack in the hand)
+    if cut_card is not None and any(card.value == Values.JACK and card.suit == cut_card.suit for card in hand):
+        score += 1
+    return score
