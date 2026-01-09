@@ -1,6 +1,7 @@
 import unittest
 import sys
 import os
+import tempfile
 
 # Add project root directory to path to import from DecksAndCards package
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -255,6 +256,306 @@ class TestDeck(unittest.TestCase):
         expected_count = len(Suits) * len(Values)
         self.assertEqual(len(deck.cards), expected_count,
                         "All cards should still be present after multiple shuffles")
+    
+    def test_deck_from_file_with_enum_names(self):
+        """Test loading deck from CSV file using enum names"""
+        # Create a temporary CSV file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, newline='') as f:
+            f.write("ACE,HEARTS\n")
+            f.write("TWO,DIAMONDS\n")
+            f.write("THREE,CLUBS\n")
+            f.write("FOUR,SPADES\n")
+            temp_file = f.name
+        
+        try:
+            deck = Deck()
+            deck.deck_from_file(temp_file)
+            
+            # Verify we loaded 4 cards
+            self.assertEqual(len(deck.cards), 4, "Should have loaded 4 cards")
+            
+            # Verify the cards are correct
+            expected_cards = [
+                (Values.ACE, Suits.HEARTS),
+                (Values.TWO, Suits.DIAMONDS),
+                (Values.THREE, Suits.CLUBS),
+                (Values.FOUR, Suits.SPADES)
+            ]
+            
+            for expected_value, expected_suit in expected_cards:
+                found = any(card.value == expected_value and card.suit == expected_suit 
+                           for card in deck.cards)
+                self.assertTrue(found, 
+                              f"Card {expected_value.name} of {expected_suit.name} should be in deck")
+        finally:
+            os.unlink(temp_file)
+    
+    def test_deck_from_file_with_symbols(self):
+        """Test loading deck from CSV file using symbols"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, newline='') as f:
+            f.write("A,H\n")
+            f.write("2,D\n")
+            f.write("J,C\n")
+            f.write("K,S\n")
+            temp_file = f.name
+        
+        try:
+            deck = Deck()
+            deck.deck_from_file(temp_file)
+            
+            self.assertEqual(len(deck.cards), 4, "Should have loaded 4 cards")
+            
+            expected_cards = [
+                (Values.ACE, Suits.HEARTS),
+                (Values.TWO, Suits.DIAMONDS),
+                (Values.JACK, Suits.CLUBS),
+                (Values.KING, Suits.SPADES)
+            ]
+            
+            for expected_value, expected_suit in expected_cards:
+                found = any(card.value == expected_value and card.suit == expected_suit 
+                           for card in deck.cards)
+                self.assertTrue(found, 
+                              f"Card {expected_value.name} of {expected_suit.name} should be in deck")
+        finally:
+            os.unlink(temp_file)
+    
+    def test_deck_from_file_with_header(self):
+        """Test loading deck from CSV file with header row"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, newline='') as f:
+            f.write("Value,Suit\n")
+            f.write("ACE,HEARTS\n")
+            f.write("TWO,DIAMONDS\n")
+            f.write("THREE,CLUBS\n")
+            temp_file = f.name
+        
+        try:
+            deck = Deck()
+            deck.deck_from_file(temp_file)
+            
+            # Header should be skipped, so we should have 3 cards
+            self.assertEqual(len(deck.cards), 3, "Should have loaded 3 cards (header skipped)")
+            
+            expected_cards = [
+                (Values.ACE, Suits.HEARTS),
+                (Values.TWO, Suits.DIAMONDS),
+                (Values.THREE, Suits.CLUBS)
+            ]
+            
+            for expected_value, expected_suit in expected_cards:
+                found = any(card.value == expected_value and card.suit == expected_suit 
+                           for card in deck.cards)
+                self.assertTrue(found, 
+                              f"Card {expected_value.name} of {expected_suit.name} should be in deck")
+        finally:
+            os.unlink(temp_file)
+    
+    def test_deck_from_file_with_empty_rows(self):
+        """Test loading deck from CSV file with empty rows"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, newline='') as f:
+            f.write("ACE,HEARTS\n")
+            f.write("\n")
+            f.write("TWO,DIAMONDS\n")
+            f.write("  ,  \n")  # Row with only whitespace
+            f.write("THREE,CLUBS\n")
+            temp_file = f.name
+        
+        try:
+            deck = Deck()
+            deck.deck_from_file(temp_file)
+            
+            # Empty rows should be skipped, so we should have 3 cards
+            self.assertEqual(len(deck.cards), 3, "Should have loaded 3 cards (empty rows skipped)")
+            
+            expected_cards = [
+                (Values.ACE, Suits.HEARTS),
+                (Values.TWO, Suits.DIAMONDS),
+                (Values.THREE, Suits.CLUBS)
+            ]
+            
+            for expected_value, expected_suit in expected_cards:
+                found = any(card.value == expected_value and card.suit == expected_suit 
+                           for card in deck.cards)
+                self.assertTrue(found, 
+                              f"Card {expected_value.name} of {expected_suit.name} should be in deck")
+        finally:
+            os.unlink(temp_file)
+    
+    def test_deck_from_file_case_insensitive(self):
+        """Test that CSV parsing is case-insensitive"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, newline='') as f:
+            f.write("ace,hearts\n")
+            f.write("TWO,diamonds\n")
+            f.write("Three,Clubs\n")
+            f.write("FOUR,spades\n")
+            temp_file = f.name
+        
+        try:
+            deck = Deck()
+            deck.deck_from_file(temp_file)
+            
+            self.assertEqual(len(deck.cards), 4, "Should have loaded 4 cards")
+            
+            expected_cards = [
+                (Values.ACE, Suits.HEARTS),
+                (Values.TWO, Suits.DIAMONDS),
+                (Values.THREE, Suits.CLUBS),
+                (Values.FOUR, Suits.SPADES)
+            ]
+            
+            for expected_value, expected_suit in expected_cards:
+                found = any(card.value == expected_value and card.suit == expected_suit 
+                           for card in deck.cards)
+                self.assertTrue(found, 
+                              f"Card {expected_value.name} of {expected_suit.name} should be in deck")
+        finally:
+            os.unlink(temp_file)
+    
+    def test_deck_from_file_clears_existing_deck(self):
+        """Test that deck_from_file clears existing cards"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, newline='') as f:
+            f.write("ACE,HEARTS\n")
+            f.write("TWO,DIAMONDS\n")
+            temp_file = f.name
+        
+        try:
+            # Create a deck with some cards
+            deck = Deck()
+            initial_count = len(deck.cards)
+            self.assertGreater(initial_count, 0, "Default deck should have cards")
+            
+            # Load from file
+            deck.deck_from_file(temp_file)
+            
+            # Should only have the 2 cards from the file
+            self.assertEqual(len(deck.cards), 2,
+                           "Deck should only contain cards from CSV file")
+        finally:
+            os.unlink(temp_file)
+    
+    def test_from_file_class_method(self):
+        """Test the from_file class method"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, newline='') as f:
+            f.write("ACE,HEARTS\n")
+            f.write("TWO,DIAMONDS\n")
+            f.write("THREE,CLUBS\n")
+            temp_file = f.name
+        
+        try:
+            deck = Deck.from_file(temp_file)
+            
+            # Verify it's a Deck instance
+            self.assertIsInstance(deck, Deck, "from_file should return a Deck instance")
+            
+            # Verify we loaded 3 cards
+            self.assertEqual(len(deck.cards), 3, "Should have loaded 3 cards")
+            
+            expected_cards = [
+                (Values.ACE, Suits.HEARTS),
+                (Values.TWO, Suits.DIAMONDS),
+                (Values.THREE, Suits.CLUBS)
+            ]
+            
+            for expected_value, expected_suit in expected_cards:
+                found = any(card.value == expected_value and card.suit == expected_suit 
+                           for card in deck.cards)
+                self.assertTrue(found, 
+                              f"Card {expected_value.name} of {expected_suit.name} should be in deck")
+        finally:
+            os.unlink(temp_file)
+    
+    def test_deck_from_file_file_not_found(self):
+        """Test that FileNotFoundError is raised for non-existent file"""
+        deck = Deck()
+        
+        with self.assertRaises(FileNotFoundError) as context:
+            deck.deck_from_file("nonexistent_file.csv")
+        
+        self.assertIn("Deck file not found", str(context.exception))
+    
+    def test_deck_from_file_invalid_value(self):
+        """Test that ValueError is raised for invalid card value"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, newline='') as f:
+            f.write("ACE,HEARTS\n")
+            f.write("INVALID,DIAMONDS\n")
+            temp_file = f.name
+        
+        try:
+            deck = Deck()
+            
+            with self.assertRaises(ValueError) as context:
+                deck.deck_from_file(temp_file)
+            
+            self.assertIn("Invalid value", str(context.exception))
+            self.assertIn("Row 2", str(context.exception))
+        finally:
+            os.unlink(temp_file)
+    
+    def test_deck_from_file_invalid_suit(self):
+        """Test that ValueError is raised for invalid suit"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, newline='') as f:
+            f.write("ACE,HEARTS\n")
+            f.write("TWO,INVALID\n")
+            temp_file = f.name
+        
+        try:
+            deck = Deck()
+            
+            with self.assertRaises(ValueError) as context:
+                deck.deck_from_file(temp_file)
+            
+            self.assertIn("Invalid suit", str(context.exception))
+            self.assertIn("Row 2", str(context.exception))
+        finally:
+            os.unlink(temp_file)
+    
+    def test_deck_from_file_insufficient_columns(self):
+        """Test that ValueError is raised for rows with insufficient columns"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, newline='') as f:
+            f.write("ACE,HEARTS\n")
+            f.write("TWO\n")  # Only one column
+            temp_file = f.name
+        
+        try:
+            deck = Deck()
+            
+            with self.assertRaises(ValueError) as context:
+                deck.deck_from_file(temp_file)
+            
+            self.assertIn("Expected 2 columns", str(context.exception))
+            self.assertIn("Row 2", str(context.exception))
+        finally:
+            os.unlink(temp_file)
+    
+    def test_deck_from_file_mixed_formats(self):
+        """Test loading deck with mixed enum names and symbols"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, newline='') as f:
+            f.write("ACE,H\n")  # Enum name and symbol
+            f.write("2,DIAMONDS\n")  # Symbol and enum name
+            f.write("THREE,C\n")  # Enum name and symbol
+            f.write("Q,SPADES\n")  # Symbol and enum name
+            temp_file = f.name
+        
+        try:
+            deck = Deck()
+            deck.deck_from_file(temp_file)
+            
+            self.assertEqual(len(deck.cards), 4, "Should have loaded 4 cards")
+            
+            expected_cards = [
+                (Values.ACE, Suits.HEARTS),
+                (Values.TWO, Suits.DIAMONDS),
+                (Values.THREE, Suits.CLUBS),
+                (Values.QUEEN, Suits.SPADES)
+            ]
+            
+            for expected_value, expected_suit in expected_cards:
+                found = any(card.value == expected_value and card.suit == expected_suit 
+                           for card in deck.cards)
+                self.assertTrue(found, 
+                              f"Card {expected_value.name} of {expected_suit.name} should be in deck")
+        finally:
+            os.unlink(temp_file)
 
 if __name__ == '__main__':
     unittest.main()
