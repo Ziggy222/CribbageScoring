@@ -18,6 +18,10 @@ def score_hand(hand, cut_card):
 
     return score
 
+# Checks for 15s in the hand, rewarding 2 points for each 15
+def check_15s(hand, cut_card, score):
+    return score
+
 # Checks for pairs in the hand, rewarding 2 points for each pair
 def check_pairs(hand, cut_card, score):
     cards = hand.copy()

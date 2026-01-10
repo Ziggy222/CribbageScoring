@@ -7,7 +7,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 sys.path.insert(0, project_root)
 
 from DecksAndCards.Card import Card, Suits, Values
-from Cribbage import check_pairs, check_runs, check_flushes, check_nibs_and_nobs
+from Cribbage import check_pairs, check_runs, check_flushes, check_nibs_and_nobs, check_15s
 
 class TestCribbage(unittest.TestCase):
     def test_score_pairs_one_pair(self):
@@ -294,3 +294,87 @@ class TestCribbage(unittest.TestCase):
         cut = Card(Values.FIVE, Suits.SPADES)
         score = check_nibs_and_nobs(hand, cut, 0)
         self.assertEqual(score, 0)
+    
+    def test_check_15s_no_15s(self):
+        """Test check_15s with [A, A, 2, 3] and cut [4] = 0 points (tests no 15s)"""
+        hand = [
+            Card(Values.ACE, Suits.HEARTS),
+            Card(Values.ACE, Suits.DIAMONDS),
+            Card(Values.TWO, Suits.CLUBS),
+            Card(Values.THREE, Suits.SPADES)
+        ]
+        cut = Card(Values.FOUR, Suits.HEARTS)
+        score = check_15s(hand, cut, 0)
+        self.assertEqual(score, 0)
+    
+    def test_check_15s_fives_and_tens(self):
+        """Test check_15s with [5, 5, J, Q] and cut [K] = 12 points (tests 5s and multiple different 10 value cards)"""
+        hand = [
+            Card(Values.FIVE, Suits.HEARTS),
+            Card(Values.FIVE, Suits.DIAMONDS),
+            Card(Values.JACK, Suits.CLUBS),
+            Card(Values.QUEEN, Suits.SPADES)
+        ]
+        cut = Card(Values.KING, Suits.HEARTS)
+        score = check_15s(hand, cut, 0)
+        self.assertEqual(score, 12)
+    
+    def test_check_15s_five_and_multiple_tens(self):
+        """Test check_15s with [5, 10, J, Q] and cut [K] = 8 points (tests 5 and multiple different 10 value cards)"""
+        hand = [
+            Card(Values.FIVE, Suits.HEARTS),
+            Card(Values.TEN, Suits.DIAMONDS),
+            Card(Values.JACK, Suits.CLUBS),
+            Card(Values.QUEEN, Suits.SPADES)
+        ]
+        cut = Card(Values.KING, Suits.HEARTS)
+        score = check_15s(hand, cut, 0)
+        self.assertEqual(score, 8)
+    
+    def test_check_15s_three_card_15s(self):
+        """Test check_15s with [6, 7, 7, 8] and cut [2] = 8 points (tests 15s made from 3 cards)"""
+        hand = [
+            Card(Values.SIX, Suits.HEARTS),
+            Card(Values.SEVEN, Suits.DIAMONDS),
+            Card(Values.SEVEN, Suits.CLUBS),
+            Card(Values.EIGHT, Suits.SPADES)
+        ]
+        cut = Card(Values.TWO, Suits.HEARTS)
+        score = check_15s(hand, cut, 0)
+        self.assertEqual(score, 8)
+    
+    def test_check_15s_four_card_and_mixed_15s(self):
+        """Test check_15s with [4, 4, 6, A] and cut [9] = 4 points (tests 15 made from 4 cards and mixed length 15s)"""
+        hand = [
+            Card(Values.FOUR, Suits.HEARTS),
+            Card(Values.FOUR, Suits.DIAMONDS),
+            Card(Values.SIX, Suits.CLUBS),
+            Card(Values.ACE, Suits.SPADES)
+        ]
+        cut = Card(Values.NINE, Suits.HEARTS)
+        score = check_15s(hand, cut, 0)
+        self.assertEqual(score, 4)
+    
+    def test_check_15s_five_card_15s(self):
+        """Test check_15s with [4, 3, 3, 3] and cut [2] = 2 points (Tests 15s made from 5 cards)"""
+        hand = [
+            Card(Values.FOUR, Suits.HEARTS),
+            Card(Values.THREE, Suits.DIAMONDS),
+            Card(Values.THREE, Suits.CLUBS),
+            Card(Values.THREE, Suits.SPADES)
+        ]
+        cut = Card(Values.TWO, Suits.HEARTS)
+        score = check_15s(hand, cut, 0)
+        self.assertEqual(score, 2)
+    
+    def test_check_15s_wild_hand(self):
+        """Test check_15s with [5, 5, 5, 5] and cut [10] = 16 points (just a wild hand)"""
+        hand = [
+            Card(Values.FIVE, Suits.HEARTS),
+            Card(Values.FIVE, Suits.DIAMONDS),
+            Card(Values.FIVE, Suits.CLUBS),
+            Card(Values.FIVE, Suits.SPADES)
+        ]
+        cut = Card(Values.TEN, Suits.HEARTS)
+        score = check_15s(hand, cut, 0)
+        self.assertEqual(score, 16)
