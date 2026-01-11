@@ -1,12 +1,14 @@
 # This file contains functions for scoring, and other cribbage-related functions
 
 from DecksAndCards.Card import Card, Suits, Values
+import itertools
 
 def score_hand(hand, cut_card):
     """Scores a hand of cards"""
     score = 0
 
     # Check for 15s
+    score = check_15s(hand, cut_card, score)
     # Check for pairs, returns incremented score
     score = check_pairs(hand, cut_card, score)
     # Check for runs
@@ -20,6 +22,40 @@ def score_hand(hand, cut_card):
 
 # Checks for 15s in the hand, rewarding 2 points for each 15
 def check_15s(hand, cut_card, score):
+    """
+    Finds all combinations of cards that sum to exactly 15.
+    Each combination of 2, 3, 4, or 5 cards that sums to 15 is worth 2 points.
+    """
+    def get_card_value(card):
+        """Get the numeric value of a card for 15s scoring (ACE=1, 2-10=2-10, J/Q/K=10)"""
+        if card.value == Values.ACE:
+            return 1
+        elif card.value in [Values.JACK, Values.QUEEN, Values.KING]:
+            return 10
+        else:
+            # For 2-10, use the numeric value from the enum
+            return card.value.value[0]
+    
+    # Combine hand and cut_card into a list of all cards
+    all_cards = hand.copy()
+    if cut_card is not None:
+        all_cards.append(cut_card)
+    
+    # Count how many combinations sum to 15
+    # We need to check all subsets of size 2, 3, 4, and 5
+    combinations_that_sum_to_15 = 0
+    
+    # Check all possible combinations of 2, 3, 4, and 5 cards
+    for r in range(2, len(all_cards) + 1):
+        for combo in itertools.combinations(all_cards, r):
+            # Calculate the sum of this combination
+            total = sum(get_card_value(card) for card in combo)
+            if total == 15:
+                combinations_that_sum_to_15 += 1
+    
+    # Each combination that sums to 15 is worth 2 points
+    score += combinations_that_sum_to_15 * 2
+    
     return score
 
 # Checks for pairs in the hand, rewarding 2 points for each pair
