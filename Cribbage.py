@@ -67,7 +67,7 @@ def check_pairs(hand, cut_card, score):
     # Check for unique pairs
     # Group cards by their value
     value_counts = {}
-    for card in hand:
+    for card in cards:
         card_value = card.value
         value_counts[card_value] = value_counts.get(card_value, 0) + 1
     
@@ -102,7 +102,7 @@ def check_runs(hand, cut_card, score):
     
     # Group cards by their run value, keeping track of counts
     value_counts = {}
-    for card in hand:
+    for card in cards:
         run_value = get_run_value(card)
         value_counts[run_value] = value_counts.get(run_value, 0) + 1
     
